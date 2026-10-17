@@ -1,5 +1,7 @@
 # dsh-desktop-restart-menu
 
+中文 | [English](README.en.md)
+
 给 DeepSeek Harness 桌面端补两个「重启」入口：
 
 - **左上角「应用」菜单**：在「退出」上方新增「重启 / Restart」。
