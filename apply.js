@@ -13,8 +13,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
+const { resolveAsar } = require('./find-asar');
 
-const ASAR = process.argv.find((a) => a.endsWith('.asar')) ?? 'D:/Programs/DeepSeek Harness/resources/app.asar';
+const ASAR = resolveAsar();
 const DRY = process.argv.includes('--dry-run');
 const HERE = __dirname;
 const BACKUP = path.join(HERE, 'backup', 'main.orig.mjs');
@@ -83,8 +84,10 @@ function readAsar(file) {
 	const fd = fs.openSync(file, 'r+');
 	const head = Buffer.alloc(16);
 	fs.readSync(fd, head, 0, 16, 0);
+	// The JSON header is a Chromium pickle: [payload size][string length][string][padding].
+	// payload size = 4-byte length field + string + padding, so file data starts at 12 + payload.
+	const dataBase = 12 + head.readUInt32LE(8);
 	const jsonLen = head.readUInt32LE(12);
-	const dataBase = 16 + jsonLen;
 	const hb = Buffer.alloc(jsonLen);
 	fs.readSync(fd, hb, 0, jsonLen, 16);
 	const header = JSON.parse(hb.toString('utf8'));
@@ -101,6 +104,16 @@ if (originalText.includes(MARK)) {
 	console.log('apply: already patched, nothing to do (' + ASAR + ')');
 	fs.closeSync(fd);
 	process.exit(0);
+}
+
+// An unpatched bundle must match the hash the asar header stores for it. A mismatch
+// means the header was parsed at the wrong offset (or the file is damaged) — never write.
+if (entry.integrity?.hash !== undefined) {
+	const actual = crypto.createHash('sha256').update(original).digest('hex');
+	if (actual !== entry.integrity.hash) {
+		fs.closeSync(fd);
+		fail('lib/main.js does not match the asar integrity hash; refusing to write');
+	}
 }
 
 let patched = originalText;

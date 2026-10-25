@@ -18,11 +18,13 @@ So this patches `lib/main.js` inside `resources/app.asar`: the patched bundle is
 Requires Node.js (built-in modules only).
 
 ```powershell
-node apply.js                    # default path D:/Programs/DeepSeek Harness/resources/app.asar
-node apply.js "C:/.../app.asar"  # custom install path
+node apply.js                    # auto-detect the install location
+node apply.js "D:/Programs/DeepSeek Harness/resources/app.asar"  # explicit path
 node apply.js --dry-run          # match and syntax-check only, no write
 node restore.js                  # restore from backup/main.orig.mjs
 ```
+
+Without a path it probes common locations (`%LOCALAPPDATA%\Programs`, `Program Files`, and `Programs` / `Apps` folders on each drive); if nothing is found it lists what it tried and asks for an explicit path. To locate the install manually: right-click DeepSeek Harness in the Start menu → Open file location → `resources`.
 
 After patching, **fully quit** the app (tray → "Quit DeepSeek Harness") and reopen it; the new entries appear on the next launch.
 
@@ -37,6 +39,7 @@ The patched Restart entry runs `app.relaunch()` plus a silent quit (skipping the
 
 - **App updates replace `app.asar`**, so the patch disappears; re-run `apply.js` after an update.
 - The script matches anchor text and only supports the shell version it was written against; if an anchor matches anything other than exactly once it aborts without writing.
+- Before writing, the extracted `lib/main.js` is checked against the SHA-256 stored in the asar header; on any layout mismatch it refuses to write, so a damaged file cannot result.
 - The first `apply.js` run saves the original `lib/main.js` to `backup/main.orig.mjs`; that folder and the generated `main.patched.mjs` are git-ignored and not distributed.
 - Restore requires a backup from the same app version; `restore.js` refuses otherwise.
 

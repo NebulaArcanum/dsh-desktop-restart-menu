@@ -18,11 +18,13 @@
 需要 Node.js（脚本只用到 Node 内置模块）。
 
 ```powershell
-node apply.js                    # 默认路径 D:/Programs/DeepSeek Harness/resources/app.asar
-node apply.js "C:/.../app.asar"  # 指定其他安装路径
+node apply.js                    # 自动查找安装位置
+node apply.js "D:/Programs/DeepSeek Harness/resources/app.asar"  # 手动指定路径
 node apply.js --dry-run          # 只做匹配和语法校验，不写入
 node restore.js                  # 用打补丁前保存的 backup/main.orig.mjs 还原
 ```
+
+不打路径时会自动探测常见安装位置（`%LOCALAPPDATA%\Programs`、`Program Files`，以及各盘符下的 `Programs` / `Apps` 等目录）；找不到时会列出尝试过的路径，并提示手动传入。找安装目录的方法：开始菜单里右键 DeepSeek Harness → 打开文件所在的位置，再进入 `resources`。
 
 打完补丁后请**完全退出**应用（托盘 →「退出 DeepSeek Harness」）再重新打开，新菜单从下次启动开始生效。
 
@@ -37,6 +39,7 @@ node restore.js                  # 用打补丁前保存的 backup/main.orig.mjs
 
 - **应用更新会替换 `app.asar`**，补丁随之消失；升级后重新运行 `apply.js` 即可。
 - 脚本按锚点文本打补丁，只支持编写时对应的 shell 版本；锚点匹配数不为 1 时会直接报错退出，不会写入坏文件。
+- 写入前会用 asar 头部记录的 SHA-256 校验读出的 `lib/main.js`，布局不符时拒绝写入，避免写坏文件。
 - `apply.js` 首次运行会把原始 `lib/main.js` 备份到 `backup/main.orig.mjs`；该目录和生成的 `main.patched.mjs` 已在 `.gitignore` 中，不随仓库分发。
 - 还原依赖同一版本的备份；版本不一致时 `restore.js` 会拒绝执行。
 
