@@ -13,7 +13,15 @@ Both native menus are built by the Electron main process (`lib/main.js`). Cordis
 
 So this patches `lib/main.js` inside `resources/app.asar`: the patched bundle is trimmed/padded to exactly the original byte length, so the asar header and entry offsets stay valid. The Electron asar-integrity fuse is disabled in this build, so the equal-length write does not trip validation.
 
-## Usage
+## One-click install / uninstall (Windows)
+
+- Double-click **`install.cmd`**: finds the install location and patches it; fully quit and reopen the app when prompted.
+- Double-click **`uninstall.cmd`**: restores the original `lib/main.js`; the Restart entries disappear after the next launch.
+- Both also accept a path, e.g. `install.cmd "D:\...\app.asar"`.
+- Node.js is required; the scripts check for it and point to the download page when missing. If the app lives in `Program Files`, run the file as administrator.
+- Uninstall needs `backup/main.orig.mjs` created by install, so keep this folder.
+
+## Command-line usage
 
 Requires Node.js (built-in modules only).
 

@@ -13,7 +13,15 @@
 
 所以这里直接给 `resources/app.asar` 里的 `lib/main.js` 打补丁：补丁后的 bundle 被裁/补到与原始文件**完全相同的字节长度**，asar 头和条目偏移保持不变。该构建的 Electron asar 完整性校验 fuse 处于关闭状态，等长写回不会触发校验。
 
-## 用法
+## 一键安装 / 卸载（Windows）
+
+- 双击 **`install.cmd`**：自动查找安装位置并打补丁；按提示完全退出应用再打开即可。
+- 双击 **`uninstall.cmd`**：还原原始 `lib/main.js`；重启应用后「重启」入口消失。
+- 也可以在终端里带路径运行，例如 `install.cmd "D:\...\app.asar"`。
+- 需要 Node.js；脚本会先检查，没装时提示下载地址。应用装在 `Program Files` 时可能需要右键「以管理员身份运行」。
+- 卸载依赖安装时生成的 `backup/main.orig.mjs`，请不要删除本目录。
+
+## 命令行用法
 
 需要 Node.js（脚本只用到 Node 内置模块）。
 
